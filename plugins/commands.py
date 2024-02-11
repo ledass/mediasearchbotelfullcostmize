@@ -1,11 +1,13 @@
 import os
 import logging
-
+import asyncio
+import sys
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-
-from info import START_MSG, CHANNELS, ADMINS, INVITE_MSG
+from pyrogram.enums import ParseMode
+from info import START_MSG, CHANNELS, ADMINS, INVITE_MSG, HELP_MSG
 from utils import Media
+from utils.broadcast.adduser import AddUserToDatabase
 
 logger = logging.getLogger(__name__)
 
@@ -13,15 +15,20 @@ logger = logging.getLogger(__name__)
 @Client.on_message(filters.command('start'))
 async def start(bot, message):
     """Start command handler"""
+    await AddUserToDatabase(bot, message)
     if len(message.command) > 1 and message.command[1] == 'subscribe':
         await message.reply(INVITE_MSG)
     else:
         buttons = [[
-            InlineKeyboardButton('Search Here', switch_inline_query_current_chat=''),
             InlineKeyboardButton('Go Inline', switch_inline_query=''),
         ]]
         reply_markup = InlineKeyboardMarkup(buttons)
         await message.reply(START_MSG, reply_markup=reply_markup)
+
+
+@Client.on_message(filters.command('help'))
+async def help_m(bot, message):
+    await message.reply(HELP_MSG, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
 
 
 @Client.on_message(filters.command('channel') & filters.user(ADMINS))
@@ -66,11 +73,11 @@ async def total(bot, message):
         await msg.edit(f'Error: {e}')
 
 
-@Client.on_message(filters.command('logger') & filters.user(ADMINS))
+@Client.on_message(filters.command('logs') & filters.user(ADMINS))
 async def log_file(bot, message):
     """Send log file"""
     try:
-        await message.reply_document('TelegramBot.log')
+        await message.reply_document('logs.txt')
     except Exception as e:
         await message.reply(str(e))
 
@@ -105,3 +112,21 @@ async def delete(bot, message):
         await msg.edit('File is successfully deleted from database')
     else:
         await msg.edit('File not found in database')
+
+
+@Client.on_message(filters.command(["restart"]) & filters.user(ADMINS))
+async def restart(bot, update):
+    logger.warning("Restarting bot using /restart command")
+    msg = await update.reply_text(
+        text="__Restarting.....__"
+    )
+    await asyncio.sleep(5)
+    await msg.edit("__Bot restarted !__")
+    os.execv(sys.executable, ['python3', 'bot.py'] + sys.argv)
+
+
+@Client.on_callback_query(filters.regex(r"^cancel_s$"))
+async def cancel_search(bot, query):
+    user_id = query.from_user.id
+    await bot.stop_listening(chat_id=user_id)
+    await query.message.edit_text("Operation cancelled, please use /index again")

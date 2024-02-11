@@ -47,15 +47,14 @@ async def save_file(media):
             mime_type=media.mime_type,
             caption=media.caption.html if media.caption else None,
         )
-    except ValidationError:
-        logger.exception('Error occurred while saving file in database')
-    else:
-        try:
-            await file.commit()
-        except DuplicateKeyError:
-            logger.warning(media.file_name + " is already saved in database")
-        else:
-            logger.info(media.file_name + " is saved in database")
+        await file.commit()
+        logger.info(media.file_name + " is saved in database")
+    except ValidationError as ve:
+        logger.error(f'Validation error while saving file in database: {ve.normalized_messages()}')
+    except DuplicateKeyError:
+        logger.warning(media.file_name + " is already saved in the database")
+    except Exception as e:
+        logger.exception(f'Error occurred while saving file in database: {str(e)}')
 
 
 async def get_search_results(query, file_type=None, max_results=10, offset=0):
@@ -71,7 +70,7 @@ async def get_search_results(query, file_type=None, max_results=10, offset=0):
 
     try:
         regex = re.compile(raw_pattern, flags=re.IGNORECASE)
-    except:
+    except Exception:
         return [], ''
 
     if USE_CAPTION_FILTER:
@@ -100,3 +99,29 @@ async def get_search_results(query, file_type=None, max_results=10, offset=0):
     files = await cursor.to_list(length=max_results)
 
     return files, next_offset
+
+
+async def get_filter_results(query):
+    query = query.strip()
+    if not query:
+        raw_pattern = '.'
+    elif ' ' not in query:
+        raw_pattern = r'(\b|[\.\+\-_])' + query + r'(\b|[\.\+\-_])'
+    else:
+        raw_pattern = query.replace(' ', r'.*[\s\.\+\-_]')
+    try:
+        regex = re.compile(raw_pattern, flags=re.IGNORECASE)
+    except Exception:
+        return []
+    filter = {'file_name': regex}
+    total_results = await Media.count_documents(filter)
+    cursor = Media.find(filter)
+    cursor.sort('$natural', -1)
+    files = await cursor.to_list(length=int(total_results))
+    return files
+
+async def get_file_details(query):
+    filter = {'file_id': query}
+    cursor = Media.find(filter)
+    filedetails = await cursor.to_list(length=1)
+    return filedetails
