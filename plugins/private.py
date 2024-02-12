@@ -14,7 +14,8 @@ from info import (
     AUTH_USERS,
     AUTH_CHANNEL,
     CUSTOM_FILE_CAPTION,
-    AUTO_DELETE_DELAY
+    AUTO_DELETE_DELAY,
+    AUTH_CHANNEL_LINK
 )
 
 logger = logging.getLogger(__name__)
@@ -33,8 +34,7 @@ BOT = {}
 async def filter(client, message):
     if message.text.startswith("/"):
         return
-    if AUTH_CHANNEL:
-        invite_link = await client.create_chat_invite_link(int(AUTH_CHANNEL))
+    if AUTH_CHANNEL and AUTH_CHANNEL_LINK:
         try:
             user = await client.get_chat_member(int(AUTH_CHANNEL), message.from_user.id)
             if user.status == "kicked":
@@ -53,7 +53,7 @@ async def filter(client, message):
                     [
                         [
                             InlineKeyboardButton(
-                                "🤖 Join Updates Channel", url=invite_link.invite_link
+                                "🤖 Join Updates Channel", url=AUTH_CHANNEL_LINK
                             )
                         ]
                     ]
@@ -61,14 +61,31 @@ async def filter(client, message):
                 parse_mode=ParseMode.MARKDOWN,
             )
             return
-        except Exception:
+        except Exception as e:
+            logger.warning(e)
             await client.send_message(
                 chat_id=message.from_user.id,
                 text="Something went Wrong.",
                 parse_mode=ParseMode.MARKDOWN,
-                disable_web_page_preview=True,
             )
             return
+    elif AUTH_CHANNEL and not AUTH_CHANNEL_LINK:
+        logger.error("AUTH_CHANNEL_LINK missing")
+        await client.send_message(
+            chat_id=message.from_user.id,
+            text="Something went Wrong.",
+            parse_mode=ParseMode.MARKDOWN,
+        )
+        return
+    elif AUTH_CHANNEL_LINK and not AUTH_CHANNEL:
+        logger.error("AUTH_CHANNEL missing")
+        await client.send_message(
+            chat_id=message.from_user.id,
+            text="Something went Wrong.",
+            parse_mode=ParseMode.MARKDOWN,
+        )
+        return
+
     if re.findall("((^\/|^,|^!|^\.|^[\U0001F600-\U000E007F]).*)", message.text):
         return
     if 1 < len(message.text) < 100:
@@ -351,7 +368,6 @@ async def cb_handler(client: Client, query: CallbackQuery):
                     chat_id=query.from_user.id,
                     file_id=file_id,
                     caption=f_caption,
-                    reply_markup=InlineKeyboardMarkup(buttons),
                 )
                 if AUTO_DELETE_DELAY:
                     delay = AUTO_DELETE_DELAY/60 if AUTO_DELETE_DELAY > 60 else AUTO_DELETE_DELAY
@@ -403,7 +419,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
                     chat_id=query.from_user.id,
                     file_id=file_id,
                     caption=f_caption,
-                    reply_markup=InlineKeyboardMarkup(buttons),
+
                 )
                 if AUTO_DELETE_DELAY:
                     delay = AUTO_DELETE_DELAY/60 if AUTO_DELETE_DELAY > 60 else AUTO_DELETE_DELAY
