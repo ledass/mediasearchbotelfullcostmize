@@ -406,13 +406,13 @@ async def cb_handler(client: Client, query: CallbackQuery):
                     reply_markup=InlineKeyboardMarkup(buttons),
                 )
                 if AUTO_DELETE_DELAY:
-                    delay = str(AUTO_DELETE_DELAY/60) + \
-                        " mins" if AUTO_DELETE_DELAY > 60 else str(
-                            AUTO_DELETE_DELAY) + " secs"
+                    delay = AUTO_DELETE_DELAY/60 if AUTO_DELETE_DELAY > 60 else AUTO_DELETE_DELAY
                     delay = round(delay, 2)
+                    minsec = str(
+                        delay) + " mins" if AUTO_DELETE_DELAY > 60 else str(delay) + " secs"
                     disc = await client.send_message(
                         query.from_user.id,
-                        f"Please save the file to your saved messages, it will be deleted in {delay}",
+                        f"Please save the file to your saved messages, it will be deleted in {minsec}",
                     )
                     await asyncio.sleep(AUTO_DELETE_DELAY)
                     await disc.delete()
