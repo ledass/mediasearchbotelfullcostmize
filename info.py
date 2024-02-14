@@ -44,6 +44,6 @@ Use me to find files you required, just send a keyword & the bot will send the f
 START_MSG = environ.get('START_MSG', default_start_msg)
 HELP_MSG = environ.get('HELP_MSG', default_help_msg)
 SHARE_BUTTON_TEXT = 'Checkout {username} for searching files'
-INVITE_MSG = environ.get('INVITE_MSG', 'Please join @.... to use this bot')
+INVITE_MSG = environ.get('INVITE_MSG', f'Please join [channel]({AUTH_CHANNEL_LINK}) to use this bot')
 CUSTOM_FILE_CAPTION = environ.get('CUSTOM_FILE_CAPTION', None)
 AUTO_DELETE_DELAY = int(environ.get('AUTO_DELETE_DELAY', 0))

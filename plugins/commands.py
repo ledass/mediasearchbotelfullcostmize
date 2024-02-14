@@ -8,6 +8,7 @@ from pyrogram.enums import ParseMode
 from info import START_MSG, CHANNELS, ADMINS, INVITE_MSG, HELP_MSG
 from utils import Media
 from utils.broadcast.adduser import AddUserToDatabase
+from utils.broadcast.access import db
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,9 @@ async def start(bot, message):
     """Start command handler"""
     await AddUserToDatabase(bot, message)
     if len(message.command) > 1 and message.command[1] == 'subscribe':
-        await message.reply(INVITE_MSG)
+        await message.reply(INVITE_MSG, parse_mode=ParseMode.MARKDOWN)
+    elif len(message.command) > 1 and message.command[1] == 'banned':
+        await message.reply("Sorry, You are Banned to use me.", parse_mode=ParseMode.MARKDOWN)
     else:
         buttons = [[
             InlineKeyboardButton('Go Inline', switch_inline_query=''),
@@ -130,3 +133,32 @@ async def cancel_search(bot, query):
     user_id = query.from_user.id
     await bot.stop_listening(chat_id=user_id)
     await query.message.edit_text("Operation cancelled, please use /index again")
+
+
+@Client.on_message(filters.command('ban') & filters.user(ADMINS))
+async def ban_user(bot, message):
+    command = message.text
+    parts = command.split()
+    if len(parts) == 2:
+        user_id = int(parts[1])
+        if not await db.is_user_banned(user_id):
+            await db.update_ban(user_id)
+        await db.ban_user(user_id)
+        await message.reply(f"User `{user_id}` banned successfully.")
+    else:
+        await message.reply("Invalid command. Please use the format '/ban <user_id>'.")
+
+
+@Client.on_message(filters.command('unban') & filters.user(ADMINS))
+async def unban_user(bot, message):
+    command = message.text
+    parts = command.split()
+    if len(parts) == 2:
+        user_id = int(parts[1])
+        if not await db.is_user_banned(user_id):
+            await message.reply(f"User `{user_id}` is not banned yet.")
+            return
+        await db.unban_user(user_id)
+        await message.reply(f"User `{user_id}` unbanned successfully.")
+    else:
+        await message.reply("Invalid command. Please use the format '/unban <user_id>'.")

@@ -17,6 +17,7 @@ from info import (
     AUTO_DELETE_DELAY,
     AUTH_CHANNEL_LINK
 )
+from utils.broadcast.access import db
 
 logger = logging.getLogger(__name__)
 cache_time = 0 if AUTH_USERS or AUTH_CHANNEL else CACHE_TIME
@@ -34,6 +35,17 @@ BOT = {}
 async def filter(client, message):
     if message.text.startswith("/"):
         return
+
+    user = await db.check_user(message.from_user.id)
+    if user and user["ban_status"]["is_banned"]:
+        await client.send_message(
+            chat_id=message.from_user.id,
+            text="Sorry, You are Banned to use me.",
+            parse_mode=ParseMode.MARKDOWN,
+            disable_web_page_preview=True,
+        )
+        return
+
     if AUTH_CHANNEL and AUTH_CHANNEL_LINK:
         try:
             user = await client.get_chat_member(int(AUTH_CHANNEL), message.from_user.id)

@@ -7,6 +7,7 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InlineQue
 
 from utils import get_search_results
 from info import CACHE_TIME, SHARE_BUTTON_TEXT, AUTH_USERS, AUTH_CHANNEL
+from utils.broadcast.access import db
 
 logger = logging.getLogger(__name__)
 cache_time = 0 if AUTH_USERS or AUTH_CHANNEL else CACHE_TIME
@@ -15,6 +16,16 @@ cache_time = 0 if AUTH_USERS or AUTH_CHANNEL else CACHE_TIME
 @Client.on_inline_query(filters.user(AUTH_USERS) if AUTH_USERS else None)
 async def answer(bot, query):
     """Show search results for given inline query"""
+
+    user = await db.check_user(query.from_user.id)
+    if user and user["ban_status"]["is_banned"]:
+        await query.answer(
+            results=[],
+            cache_time=0,
+            switch_pm_text='Sorry, You are Banned to use me.',
+            switch_pm_parameter="banned",
+        )
+        return
 
     if AUTH_CHANNEL and not await is_subscribed(bot, query):
         await query.answer(
@@ -76,10 +87,12 @@ async def answer(bot, query):
 
 
 def get_reply_markup(username, query):
-    url = 't.me/share/url?url=' + quote(SHARE_BUTTON_TEXT.format(username=username))
+    url = 't.me/share/url?url=' + \
+        quote(SHARE_BUTTON_TEXT.format(username=username))
     buttons = [
         [
-            InlineKeyboardButton('Search again', switch_inline_query_current_chat=query),
+            InlineKeyboardButton(
+                'Search again', switch_inline_query_current_chat=query),
             InlineKeyboardButton('Share bot', url=url),
         ]
     ]
