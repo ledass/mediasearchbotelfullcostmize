@@ -8,7 +8,7 @@ load_dotenv()
 logging.config.fileConfig('logging.conf')
 logging.getLogger().setLevel(logging.WARNING)
 
-from pyrogram import Client, __version__
+from pyrogram import Client, __version__, idle
 from pyrogram.raw.all import layer
 from pyromod import listen
 from pyrogram.idle import idle
