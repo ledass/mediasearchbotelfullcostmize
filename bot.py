@@ -11,7 +11,6 @@ logging.getLogger().setLevel(logging.WARNING)
 from pyrogram import Client, __version__, idle
 from pyrogram.raw.all import layer
 from pyromod import listen
-from pyrogram import idle  # ✅ Correct import for Pyrogram v2
 from utils import Media
 from info import SESSION, API_ID, API_HASH, BOT_TOKEN, LOG_CHANNEL
 
@@ -29,7 +28,7 @@ class Bot(Client):
             sleep_threshold=5,
         )
 
-            async def start(self):
+    async def start(self):
         await super().start()
         await Media.ensure_indexes()
         me = await self.get_me()
@@ -45,14 +44,12 @@ class Bot(Client):
 
         # ✅ Keep the bot running
         await idle()
-        
-        
 
     async def stop(self, *args):
         await super().stop()
         print("Bot stopped. Bye.")
 
 
-
 app = Bot()
 app.run()
+
