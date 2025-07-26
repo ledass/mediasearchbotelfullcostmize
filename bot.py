@@ -29,7 +29,7 @@ class Bot(Client):
             sleep_threshold=5,
         )
 
-    async def start(self):
+        async def start(self):
         await super().start()
         await Media.ensure_indexes()
         me = await self.get_me()
@@ -38,14 +38,14 @@ class Bot(Client):
 
         # ✅ Send message to log channel
         if LOG_CHANNEL:
-    try:
-        await self.send_message(LOG_CHANNEL, "✅ Test log message")
-    except Exception as e:
-        print(f"❌ Failed to send to LOG_CHANNEL: {e}")
-            
+            try:
+                await self.send_message(LOG_CHANNEL, "✅ Test log message")
+            except Exception as e:
+                print(f"❌ Failed to send to LOG_CHANNEL: {e}")
 
         # ✅ Keep the bot running
         await idle()
+        
 
     async def stop(self, *args):
         await super().stop()
