@@ -39,9 +39,9 @@ class Bot(Client):
         # ✅ Send message to log channel
         if LOG_CHANNEL:
             try:
-                await self.send_message(LOG_CHANNEL, f"✅ Bot started as {me.mention}")
-            except Exception as e:
-                print(f"❌ Cannot send message to log channel: {e}")
+    await self.send_message(LOG_CHANNEL, "✅ Test log message")
+except Exception as e:
+    print(f"❌ Failed to send to LOG_CHANNEL: {e}")
 
         # ✅ Keep the bot running
         await idle()
