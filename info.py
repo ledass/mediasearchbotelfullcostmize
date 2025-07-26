@@ -24,7 +24,7 @@ AUTH_USERS = (auth_users + ADMINS) if auth_users else []
 auth_channel = environ.get('AUTH_CHANNEL', None)
 AUTH_CHANNEL = int(auth_channel) if auth_channel and id_pattern.search(auth_channel) else auth_channel
 AUTH_CHANNEL_LINK = environ.get('AUTH_CHANNEL_LINK', None)
-LOG_CHANNEL = int(os.environ.get("LOG_CHANNEL")) if os.environ.get("LOG_CHANNEL") else None
+LOG_CHANNEL = int(environ.get("LOG_CHANNEL", 0)) or None
 
 
 # MongoDB information
