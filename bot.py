@@ -51,39 +51,6 @@ class Bot(Client):
         print("Bot stopped. Bye.")
 
 
-app = Bot()
-app.run()
-🧪 Test Check Before Running
-.env file must include:
-
-ini
-Copy code
-LOG_CHANNEL=-100xxxxxxxxxx
-Your info.py must include this:
-
-python
-Copy code
-LOG_CHANNEL = int(os.environ.get("LOG_CHANNEL")) if os.environ.get("LOG_CHANNEL") else None
-Your bot must be admin in the log channel.
-
-Let me know if you'd like a .zip of this working setup or help testing on Koyeb or Replit.
-
-
-
-
-
-
-
-
-
-
-
-Tools
-
-
-
-ChatGPT can make mistakes. Check important info. See Cookie Preferences.
-
 
 app = Bot()
 app.run()
