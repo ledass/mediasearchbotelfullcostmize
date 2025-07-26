@@ -29,7 +29,7 @@ class Bot(Client):
             sleep_threshold=5,
         )
 
-        async def start(self):
+            async def start(self):
         await super().start()
         await Media.ensure_indexes()
         me = await self.get_me()
@@ -45,6 +45,7 @@ class Bot(Client):
 
         # ✅ Keep the bot running
         await idle()
+        
         
 
     async def stop(self, *args):
