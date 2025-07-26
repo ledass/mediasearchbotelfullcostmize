@@ -13,7 +13,7 @@ from pyrogram.raw.all import layer
 from pyromod import listen
 from pyrogram.idle import idle
 from utils import Media
-from info import SESSION, API_ID, API_HASH, BOT_TOKEN
+from info import SESSION, API_ID, API_HASH, BOT_TOKEN, LOG_CHANNEL
 
 
 class Bot(Client):
